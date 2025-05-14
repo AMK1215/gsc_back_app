@@ -22,6 +22,7 @@ npx ts-node prisma/provider.seed.ts
 npx prisma migrate dev --name add_game_type_providers
 npx ts-node prisma/gameTypeProvider.seed.ts
 npx prisma generate
+npx prisma migrate deploy / to use production
 model Product {
   id          Int      @id @default(autoincrement())
   name        String
