@@ -1,0 +1,60 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  Owner
+  Agent
+  Sub_Agent
+  Player
+}
+
+model User {
+  id        Int      @id @default(autoincrement()) // Unique identifier for each user
+  name      String? // Optional full name of the user
+  user_name String? // Optional username for login
+  email     String?  @unique // Optional unique email address
+  phone     String?  @unique // Optional unique phone number
+  password  String // Hashed password for authentication
+  address   String?  @db.Text // Optional address stored as text
+  role      Role     @default(Owner) // User role (ADMIN or USER) defaulting to USER
+  status    Boolean  @default(true) // Account status flag, defaults to active
+  balance   Decimal  @default(0) @db.Decimal(10, 2) // User's balance with 2 decimal places
+  agent_id  Int?     @unique // Optional reference to an agent (self-relation)
+  agent     User?    @relation("UserToAgent", fields: [agent_id], references: [id]) // Relation to agent user
+  users     User[]   @relation("UserToAgent") // Inverse relation - users managed by this agent
+  createdAt DateTime @default(now()) // Timestamp of user creation
+  updatedAt DateTime @updatedAt // Automatically updated timestamp
+
+  @@map("users") // Maps this model to "users" table in database
+}
+
+// To migrate this schema, run the following commands:
+// 1. Generate migration files:
+//    npx prisma migrate dev --name init
+//
+// 2. Apply migrations to database:
+//    npx prisma migrate deploy
+//
+// 3. Generate Prisma Client (if needed):
+//    npx prisma generate
+//
+// For development:
+// - Use `prisma migrate dev` to create migrations and apply them
+// - Use `prisma db push` for quick schema prototyping without migrations
+//
+// For production:
+// - Always use `prisma migrate deploy` to apply migrations
+// - Never use `prisma db push` in production
