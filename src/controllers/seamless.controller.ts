@@ -35,7 +35,8 @@ export const getBalance = async (req: Request, res: Response) => {
 
   // 2. Validate signature using config values
   const method = 'getbalance'; // always lower case
-  const expectedSign = md5(GAME_OPERATOR_CODE + RequestTime + method + GAME_SECRET_KEY);
+  const expectedSign = md5(OperatorCode + RequestTime + method + GAME_SECRET_KEY);
+  console.log(expectedSign);
   if (Sign !== expectedSign) {
     const response: GetBalanceResponse = {
       ErrorCode: GameErrorCode.InvalidSign,
