@@ -2,9 +2,10 @@ import { Request, Response } from 'express';
 import { PrismaClient } from '@prisma/client';
 import crypto from 'crypto';
 import { GetBalanceRequest, GetBalanceResponse } from '../types/seamless';
+import { GAME_OPERATOR_CODE, GAME_SECRET_KEY } from '../config/game';
+import { GameErrorCode, GameErrorDescription } from '../exceptions/gameErrorCode';
 
 const prisma = new PrismaClient();
-const SECRET_KEY = process.env.GAME_API_SECRET_KEY || 'your_default_secret';
 
 function md5(str: string) {
   return crypto.createHash('md5').update(str).digest('hex');
@@ -23,8 +24,8 @@ export const getBalance = async (req: Request, res: Response) => {
   // 1. Validate required fields
   if (!MemberName || !OperatorCode || !MessageID || !RequestTime || !Sign) {
     const response: GetBalanceResponse = {
-      ErrorCode: 1001,
-      ErrorMessage: 'Missing required fields',
+      ErrorCode: GameErrorCode.MemberInsufficientBalance,
+      ErrorMessage: GameErrorDescription[GameErrorCode.MemberInsufficientBalance],
       Balance: 0,
       BeforeBalance: 0,
     };
@@ -32,13 +33,13 @@ export const getBalance = async (req: Request, res: Response) => {
     return;
   }
 
-  // 2. Validate signature
-  const method = 'getbalance'; // or extract from URL if needed
-  const expectedSign = md5(OperatorCode + RequestTime + method + SECRET_KEY);
+  // 2. Validate signature using config values
+  const method = 'getbalance'; // always lower case
+  const expectedSign = md5(GAME_OPERATOR_CODE + RequestTime + method + GAME_SECRET_KEY);
   if (Sign !== expectedSign) {
     const response: GetBalanceResponse = {
-      ErrorCode: 1002,
-      ErrorMessage: 'Invalid signature',
+      ErrorCode: GameErrorCode.InvalidSign,
+      ErrorMessage: GameErrorDescription[GameErrorCode.InvalidSign],
       Balance: 0,
       BeforeBalance: 0,
     };
@@ -53,8 +54,8 @@ export const getBalance = async (req: Request, res: Response) => {
 
   if (!user) {
     const response: GetBalanceResponse = {
-      ErrorCode: 1003,
-      ErrorMessage: 'Member not exists',
+      ErrorCode: GameErrorCode.MemberNotExists,
+      ErrorMessage: GameErrorDescription[GameErrorCode.MemberNotExists],
       Balance: 0,
       BeforeBalance: 0,
     };
@@ -65,8 +66,8 @@ export const getBalance = async (req: Request, res: Response) => {
   // 4. Return balance
   const balance = Number(user.balance).toFixed(4);
   const response: GetBalanceResponse = {
-    ErrorCode: 0,
-    ErrorMessage: 'Success',
+    ErrorCode: GameErrorCode.Success,
+    ErrorMessage: GameErrorDescription[GameErrorCode.Success],
     Balance: balance,
     BeforeBalance: balance,
   };

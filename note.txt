@@ -25,6 +25,8 @@ npx ts-node prisma/gameList.seed.ts
 npx prisma generate
 npx prisma migrate deploy / to use production
 
+npm run clean && npm run build
+
 DATABASE_URL="mysql://root:delighT%40%23%242024team@68.183.228.81:3306/gsc_node"
 
 sudo apt install certbot python3-certbot-nginx

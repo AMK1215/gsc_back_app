@@ -1,0 +1,31 @@
+export enum GameErrorCode {
+  Success = 0,
+  Failed = 16,
+  ApiError = 19,
+  TooManyRequests = 20,
+  InternalServerError = 999,
+  MemberNotExists = 1000,
+  MemberInsufficientBalance = 1001,
+  IncorrectAgentKey = 1002,
+  DuplicateTransaction = 1003,
+  InvalidSign = 1004,
+  NoGetGameList = 1005,
+  BetNotExist = 1006,
+  ProductUnderMaintenance = 2000,
+}
+
+export const GameErrorDescription: Record<GameErrorCode, string> = {
+  [GameErrorCode.Success]: 'Success',
+  [GameErrorCode.Failed]: 'Failed',
+  [GameErrorCode.ApiError]: 'API Error',
+  [GameErrorCode.TooManyRequests]: 'Too Many Requests',
+  [GameErrorCode.InternalServerError]: 'Internal Server Error',
+  [GameErrorCode.MemberNotExists]: 'API Member Not Exists',
+  [GameErrorCode.MemberInsufficientBalance]: 'API Member Insufficient Balance',
+  [GameErrorCode.IncorrectAgentKey]: 'API Incorrect Agent Key',
+  [GameErrorCode.DuplicateTransaction]: 'API Duplicate Transaction',
+  [GameErrorCode.InvalidSign]: 'API Invalid Sign',
+  [GameErrorCode.NoGetGameList]: 'API No Get Game List',
+  [GameErrorCode.BetNotExist]: 'API Bet Not Exist',
+  [GameErrorCode.ProductUnderMaintenance]: 'API Product Under Maintenance',
+}; 
