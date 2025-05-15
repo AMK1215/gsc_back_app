@@ -1,6 +1,6 @@
 import express, { Express, Request, Response, NextFunction, ErrorRequestHandler } from 'express';
 import { PORT, JWT_SECRET } from './secrets';
-import rootRouter from './routes';
+import router from './routes';
 import { PrismaClient } from '@prisma/client';
 import { errorHandler, notFoundHandler } from './middleware/error.middleware';
 import cors from 'cors';
@@ -24,7 +24,7 @@ if (!JWT_SECRET) {
   }));
   
   // Routes with api prefix
-  app.use('/api', rootRouter);
+  app.use('/api', router);
   
   
   
@@ -52,6 +52,6 @@ if (!JWT_SECRET) {
   
   // Start server
   app.listen(PORT, () => {
-    console.log(`Server is running on http://localhost:${PORT}`);
+    console.log(`Server running on port ${PORT}`);
   });
   

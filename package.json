@@ -5,8 +5,9 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "npx nodemon",
-     "build": "tsc",
-    "dev": "npx nodemon --config nodemon.json"
+    "build": "tsc",
+    "dev": "npx nodemon --config nodemon.json",
+    "clean": "rimraf dist"
   },
   "keywords": [],
   "author": "",
@@ -36,10 +37,10 @@
     "zod": "^3.24.3"
   },
   "prisma": {
-    "seed": "ts-node prisma/seed.ts",
-    "gameType": "ts-node prisma/gameType.seed.ts",
-    "provider": "ts-node prisma/provider.seed.ts",
-    "gameTypeProvider": "ts-node prisma/gameTypeProvider.seed.ts",
-    "gameList": "ts-node prisma/gameList.seed.ts"
+    "seed": "ts-node src/prisma/seed.ts",
+    "gameType": "ts-node src/prisma/gameType.seed.ts",
+    "provider": "ts-node src/prisma/provider.seed.ts",
+    "gameTypeProvider": "ts-node src/prisma/gameTypeProvider.seed.ts",
+    "gameList": "ts-node src/prisma/gameList.seed.ts"
   }
 }
