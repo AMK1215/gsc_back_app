@@ -26,7 +26,10 @@ npx prisma generate
 npx prisma migrate deploy / to use production
 
 npm run clean && npm run build
-
+pm2 restart gsc-back_app
+pm2 logs gsc-back_app
+     cd /root/.pm2/logs/gsc-back_app-out.log
+     tail -f /root/.pm2/logs/gsc-back_app-out.log
 DATABASE_URL="mysql://root:delighT%40%23%242024team@68.183.228.81:3306/gsc_node"
 
 sudo apt install certbot python3-certbot-nginx
