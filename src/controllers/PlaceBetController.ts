@@ -2,8 +2,6 @@ import { Request, Response } from 'express';
 import { PrismaClient } from '@prisma/client';
 import Redis from 'ioredis';
 import { GameErrorCode, GameErrorDescription } from '../exceptions/gameErrorCode';
-import { RequestTransaction } from '../dtos/RequestTransaction';
-import { validate } from 'class-validator';
 
 const prisma = new PrismaClient();
 const redis = new Redis(); // configure as needed
@@ -116,14 +114,12 @@ export const placeBet = async (req: Request, res: Response) => {
       acquiredWagerLocks.push(key);
     }
 
-    // 6. Validate transactions
+    // 6. Manual validation for required transaction fields
     for (const t of Transactions) {
-      const tx = Object.assign(new RequestTransaction(), t);
-      const errors = await validate(tx);
-      if (errors.length > 0) {
+      if (!t.TransactionID || !t.WagerID || !t.ProductID || !t.GameType || t.BetAmount === undefined || t.TransactionAmount === undefined) {
         return res.json({
           ErrorCode: GameErrorCode.ApiError,
-          ErrorMessage: 'Invalid transaction fields',
+          ErrorMessage: 'Missing required transaction fields',
           Balance: Number(user.balance).toFixed(4),
           BeforeBalance: Number(user.balance).toFixed(4),
         });
@@ -189,7 +185,7 @@ export const placeBet = async (req: Request, res: Response) => {
               member_name: t.MemberName,
               created_at: new Date(),
               updated_at: new Date(),
-              seamless_event_id: event.id, // Use created event's ID
+              seamless_event_id: event.id,
               rate: null,
               wager_status: t.TransactionAmount > 0 ? WagerStatus.Win : WagerStatus.Lose,
             }
