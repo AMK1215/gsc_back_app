@@ -57,11 +57,12 @@ export const placeBet = async (req: Request, res: Response) => {
 
   // 4. Validate transactions using DTO and class-validator
   if (!Array.isArray(Transactions) || Transactions.length === 0) {
+    const bal = Number(user.balance).toFixed(4);
     return res.json({
       ErrorCode: GameErrorCode.ApiError,
       ErrorMessage: 'Invalid transaction data format.',
-      Balance: Number(user.balance).toFixed(4),
-      BeforeBalance: Number(user.balance).toFixed(4),
+      Balance: bal,
+      BeforeBalance: bal,
     });
   }
 
@@ -69,11 +70,12 @@ export const placeBet = async (req: Request, res: Response) => {
     const tx = Object.assign(new RequestTransaction(), t);
     const errors = await validate(tx);
     if (errors.length > 0) {
+      const bal = Number(user.balance).toFixed(4);
       return res.json({
         ErrorCode: GameErrorCode.ApiError,
         ErrorMessage: 'Invalid transaction fields',
-        Balance: Number(user.balance).toFixed(4),
-        BeforeBalance: Number(user.balance).toFixed(4),
+        Balance: bal,
+        BeforeBalance: bal,
       });
     }
   }
@@ -84,11 +86,12 @@ export const placeBet = async (req: Request, res: Response) => {
     where: { transaction_id: { in: transactionIds } }
   });
   if (existing) {
+    const bal = Number(user.balance).toFixed(4);
     return res.json({
       ErrorCode: GameErrorCode.DuplicateTransaction,
       ErrorMessage: GameErrorDescription[GameErrorCode.DuplicateTransaction],
-      Balance: Number(user.balance).toFixed(4),
-      BeforeBalance: Number(user.balance).toFixed(4),
+      Balance: bal,
+      BeforeBalance: bal,
     });
   }
 
@@ -98,11 +101,12 @@ export const placeBet = async (req: Request, res: Response) => {
   const afterBalance = beforeBalance + totalTransactionAmount;
 
   if (afterBalance < 0) {
+    const bal = beforeBalance.toFixed(4);
     return res.json({
       ErrorCode: GameErrorCode.MemberInsufficientBalance,
       ErrorMessage: GameErrorDescription[GameErrorCode.MemberInsufficientBalance],
-      Balance: beforeBalance.toFixed(4),
-      BeforeBalance: beforeBalance.toFixed(4),
+      Balance: bal,
+      BeforeBalance: bal,
     });
   }
 
