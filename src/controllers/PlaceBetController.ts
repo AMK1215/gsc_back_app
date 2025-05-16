@@ -12,6 +12,8 @@ function md5(str: string) {
 }
 
 export const placeBet = async (req: Request, res: Response) => {
+  console.log('--- PlaceBet Request Body ---');
+  console.log(JSON.stringify(req.body, null, 2));
   const {
     MemberName,
     OperatorCode,
@@ -24,6 +26,7 @@ export const placeBet = async (req: Request, res: Response) => {
 
   // 1. Validate required fields
   if (!MemberName || !OperatorCode || !ProductID || !MessageID || !RequestTime || !Sign || !Transactions) {
+    console.log('Missing required fields');
     return res.json({
       ErrorCode: GameErrorCode.ApiError,
       ErrorMessage: GameErrorDescription[GameErrorCode.ApiError],
@@ -35,7 +38,10 @@ export const placeBet = async (req: Request, res: Response) => {
   // 2. Validate signature
   const method = 'placebet';
   const expectedSign = md5(OperatorCode + RequestTime + method + process.env.GAME_SECRET_KEY);
+  console.log('ExpectedSign:', expectedSign);
+  console.log('Provided Sign:', Sign);
   if (Sign !== expectedSign) {
+    console.log('Invalid signature');
     return res.json({
       ErrorCode: GameErrorCode.InvalidSign,
       ErrorMessage: GameErrorDescription[GameErrorCode.InvalidSign],
@@ -47,6 +53,7 @@ export const placeBet = async (req: Request, res: Response) => {
   // 3. Fetch user
   const user = await prisma.user.findFirst({ where: { user_name: MemberName } });
   if (!user) {
+    console.log('User not found:', MemberName);
     return res.json({
       ErrorCode: GameErrorCode.MemberNotExists,
       ErrorMessage: GameErrorDescription[GameErrorCode.MemberNotExists],
@@ -58,6 +65,7 @@ export const placeBet = async (req: Request, res: Response) => {
   // 4. Validate transactions using DTO and class-validator
   if (!Array.isArray(Transactions) || Transactions.length === 0) {
     const bal = Number(user.balance).toFixed(4);
+    console.log('Invalid transaction data format');
     return res.json({
       ErrorCode: GameErrorCode.ApiError,
       ErrorMessage: 'Invalid transaction data format.',
@@ -71,6 +79,7 @@ export const placeBet = async (req: Request, res: Response) => {
     const errors = await validate(tx);
     if (errors.length > 0) {
       const bal = Number(user.balance).toFixed(4);
+      console.log('Transaction validation errors:', errors);
       return res.json({
         ErrorCode: GameErrorCode.ApiError,
         ErrorMessage: 'Invalid transaction fields',
@@ -87,6 +96,7 @@ export const placeBet = async (req: Request, res: Response) => {
   });
   if (existing) {
     const bal = Number(user.balance).toFixed(4);
+    console.log('Duplicate transaction detected:', transactionIds);
     return res.json({
       ErrorCode: GameErrorCode.DuplicateTransaction,
       ErrorMessage: GameErrorDescription[GameErrorCode.DuplicateTransaction],
@@ -99,9 +109,11 @@ export const placeBet = async (req: Request, res: Response) => {
   const totalTransactionAmount = Transactions.reduce((sum: number, t: any) => sum + (t.TransactionAmount || 0), 0);
   const beforeBalance = Number(user.balance);
   const afterBalance = beforeBalance + totalTransactionAmount;
+  console.log('BeforeBalance:', beforeBalance, 'TotalTransactionAmount:', totalTransactionAmount, 'AfterBalance:', afterBalance);
 
   if (afterBalance < 0) {
     const bal = beforeBalance.toFixed(4);
+    console.log('Insufficient balance');
     return res.json({
       ErrorCode: GameErrorCode.MemberInsufficientBalance,
       ErrorMessage: GameErrorDescription[GameErrorCode.MemberInsufficientBalance],
@@ -112,6 +124,7 @@ export const placeBet = async (req: Request, res: Response) => {
 
   // 7. Insert transactions and update balance in a transaction
   try {
+    console.log('Starting DB transaction for PlaceBet...');
     await prisma.$transaction(async (tx) => {
       for (const t of Transactions) {
         await tx.seamlessTransaction.create({
@@ -140,7 +153,7 @@ export const placeBet = async (req: Request, res: Response) => {
         data: { balance: afterBalance }
       });
     });
-
+    console.log('DB transaction committed.');
     return res.json({
       ErrorCode: GameErrorCode.Success,
       ErrorMessage: GameErrorDescription[GameErrorCode.Success],
@@ -148,6 +161,7 @@ export const placeBet = async (req: Request, res: Response) => {
       BeforeBalance: beforeBalance.toFixed(4),
     });
   } catch (e) {
+    console.log('Error during DB transaction:', e);
     return res.json({
       ErrorCode: GameErrorCode.InternalServerError,
       ErrorMessage: GameErrorDescription[GameErrorCode.InternalServerError],
