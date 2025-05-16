@@ -31,6 +31,7 @@ export enum WagerStatus {
 }
 
 export const placeBet = async (req: Request, res: Response) => {
+  console.log('=== [DEBUG] PlaceBet handler reached ===');
   console.log('--- PlaceBet Request Body ---');
   console.log(JSON.stringify(req.body, null, 2));
   const {
