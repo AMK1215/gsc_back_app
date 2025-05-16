@@ -1,156 +1,4 @@
-npm init -y 
-npm install typescript --save-dev
-npx tsc --init
-npm install @types/node --save-dev
-npm install express
-npm install @types/express --save-dev
-npm install prisma @prisma/client
-npx prisma init
-
-
-#table create 
-npx prisma migrate dev --name CreateUsersTable
-// colum increase 
-npx prisma migrate dev --name AddRoleToUser 
-npx prisma studio
-
-npx prisma migrate dev --name CreateProductsTable
-npx prisma migrate dev --name add_game_types
-npx ts-node prisma/gameType.seed.ts
-npx prisma migrate dev --name add_providers
-npx ts-node prisma/provider.seed.ts
-npx prisma migrate dev --name add_game_type_providers
-npx ts-node prisma/gameTypeProvider.seed.ts
-npx ts-node prisma/gameList.seed.ts
-npx prisma generate
-npx prisma migrate deploy / to use production
-npx prisma format
-npx prisma migrate dev --name add-seamless-tables
-npm run clean && npm run build
-pm2 restart gsc-back_app
-pm2 logs gsc-back_app
-     cd /root/.pm2/logs/gsc-back_app-out.log
-     tail -f /root/.pm2/logs/gsc-back_app-out.log
-DATABASE_URL="mysql://root:delighT%40%23%242024team@68.183.228.81:3306/gsc_node"
-
-sudo apt install certbot python3-certbot-nginx
-sudo certbot --nginx -d luckymillion.pro -d www.luckymillion.pro
-model Product {
-  id          Int      @id @default(autoincrement())
-  name        String
-  description String   @db.Text
-  price       Decimal  @db.Decimal(10,2)
-  tags        String   @db.Text
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-
-  @@map("products")
- }
-
- npx prisma migrate dev --name CarTable
- npx prisma generate
-
-// Create new user (Owner can create Agent, Agent can create Sub_Agent and Player)
-  async createUser(req: Request, res: Response) {
-    const { name, user_name, email, phone, password, role, agent_id } = req.body;
-    const currentUser = req.user!;
-
-    // Validate role hierarchy
-    if (currentUser.role === 'Owner' && role !== 'Agent') {
-      throw new ForbiddenException('Owner can only create Agents', ErrorCode.FORBIDDEN);
-    }
-
-    if (currentUser.role === 'Agent' && !['Sub_Agent', 'Player'].includes(role)) {
-      throw new ForbiddenException('Agent can only create Sub-Agents and Players', ErrorCode.FORBIDDEN);
-    }
-
-    // Hash password
-    const hashedPassword = await bcrypt.hash(password, 10);
-
-    const newUser = await prismaClient.user.create({
-      data: {
-        name,
-        user_name,
-        email,
-        phone,
-        password: hashedPassword,
-        role,
-        agent_id: currentUser.role === 'Agent' ? currentUser.id : agent_id
-      }
-    });
-
-    res.status(201).json({
-      message: 'User created successfully',
-      user: {
-        id: newUser.id,
-        name: newUser.name,
-        user_name: newUser.user_name,
-        role: newUser.role
-      }
-    });
-  }
-
-
-///-----------
-import express, { Express, Request, Response, NextFunction, ErrorRequestHandler } from 'express';
-import { PORT, JWT_SECRET } from './secrets';
-import rootRouter from './routes';
-import { PrismaClient } from '@prisma/client';
-import { errorHandler, notFoundHandler } from './middleware/error.middleware';
-import cors from 'cors';
-
-
-// Validate environment variables
-if (!JWT_SECRET) {
-    throw new Error('JWT_SECRET is not defined in environment variables');
-  }
-  
-  const app: Express = express();
-  
-  // Middleware
-  app.use(express.json());
-  app.use(express.urlencoded({ extended: true }));
-  
-  // Allow requests from your frontend origin
-  app.use(cors({
-    origin: 'http://localhost:5173', // or use '*' for all origins (not recommended for production)
-    credentials: true // if you need to send cookies or authentication headers
-  }));
-  
-  // Routes with api prefix
-  app.use('/api', rootRouter);
-  
-  
-  
-  // Health check endpoint
-  app.get('/health', (req: Request, res: Response) => {
-    res.status(200).json({ status: 'ok' });
-  });
-  
-  // Initialize Prisma Client
-  export const prismaClient = new PrismaClient({
-    log: process.env.NODE_ENV === 'development' ? ['query', 'info', 'warn', 'error'] : ['error'],
-  });
-  
-  
-  // Error handling middleware (must be after all routes)
-  app.use(notFoundHandler);
-  app.use(errorHandler as ErrorRequestHandler);
-  
-  // Graceful shutdown
-  process.on('SIGINT', async () => {
-    await prismaClient.$disconnect();
-    process.exit(0);
-  });
-  
-  
-  // Start server
-  app.listen(PORT, () => {
-    console.log(`Server is running on http://localhost:${PORT}`);
-  });
-  
-
-  import { Request, Response } from 'express';
+import { Request, Response } from 'express';
 import { PrismaClient } from '@prisma/client';
 import crypto from 'crypto';
 import { GameErrorCode, GameErrorDescription } from '../exceptions/gameErrorCode';
@@ -164,7 +12,6 @@ function md5(str: string) {
 }
 
 export const placeBet = async (req: Request, res: Response) => {
-    
   const {
     MemberName,
     OperatorCode,
@@ -218,7 +65,6 @@ export const placeBet = async (req: Request, res: Response) => {
     });
   }
 
-  // Validate each transaction
   for (const t of Transactions) {
     const tx = Object.assign(new RequestTransaction(), t);
     const errors = await validate(tx);
@@ -306,5 +152,3 @@ export const placeBet = async (req: Request, res: Response) => {
     });
   }
 };
-
-export default placeBet;

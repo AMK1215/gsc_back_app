@@ -9,7 +9,7 @@ generator client {
 }
 
 datasource db {
-   provider = "mysql"
+  provider = "mysql"
   url      = env("DATABASE_URL")
 }
 
@@ -20,26 +20,28 @@ enum Role {
   Player
 }
 
-
 model User {
-  id        Int      @id @default(autoincrement())  // Unique identifier for each user
-  name      String?  // Optional full name of the user
-  user_name String?  // Optional username for login
-  email     String?  @unique  // Optional unique email address
-  phone     String?  @unique  // Optional unique phone number
-  password  String   // Hashed password for authentication
-  address   String?  @db.Text  // Optional address stored as text
-  role      Role     @default(Owner)  // User role (ADMIN or USER) defaulting to USER
-  status    Boolean  @default(true)  // Account status flag, defaults to active
-  balance   Decimal  @db.Decimal(10,2) @default(0)  // User's balance with 2 decimal places
-  agent_id  Int?       // Optional reference to an agent (self-relation)
-  agent     User?    @relation("UserToAgent", fields: [agent_id], references: [id])  // Relation to agent user
-  users     User[]   @relation("UserToAgent")  // Inverse relation - users managed by this agent
-  createdAt DateTime @default(now())  // Timestamp of user creation
-  updatedAt DateTime @updatedAt  // Automatically updated timestamp
+  id                   Int                   @id @default(autoincrement()) // Unique identifier for each user
+  name                 String? // Optional full name of the user
+  user_name            String? // Optional username for login
+  email                String?               @unique // Optional unique email address
+  phone                String?               @unique // Optional unique phone number
+  password             String // Hashed password for authentication
+  address              String?               @db.Text // Optional address stored as text
+  role                 Role                  @default(Owner) // User role (ADMIN or USER) defaulting to USER
+  status               Boolean               @default(true) // Account status flag, defaults to active
+  balance              Decimal               @default(0) @db.Decimal(10, 2) // User's balance with 2 decimal places
+  agent_id             Int? // Optional reference to an agent (self-relation)
+  agent                User?                 @relation("UserToAgent", fields: [agent_id], references: [id]) // Relation to agent user
+  users                User[]                @relation("UserToAgent") // Inverse relation - users managed by this agent
+  seamlessEvents       SeamlessEvent[]
+  seamlessTransactions SeamlessTransaction[]
+  createdAt            DateTime              @default(now()) // Timestamp of user creation
+  updatedAt            DateTime              @updatedAt // Automatically updated timestamp
 
-  @@map("users")  // Maps this model to "users" table in database
+  @@map("users") // Maps this model to "users" table in database
 }
+
 model GameType {
   id        Int      @id @default(autoincrement())
   name      String
@@ -52,65 +54,102 @@ model GameType {
   updatedAt DateTime @updatedAt
 
   providers GameTypeProvider[]
-  games     GameList[]  // Add this relation
+  games     GameList[] // Add this relation
 
   @@map("game_types")
 }
-model Provider {
-  id              Int      @id @default(autoincrement())
-  code            String   @unique
-  name            String
-  short_name      String?
-  order           Int      @default(0)
-  status          Int      @default(1)
-  game_list_status Boolean @default(true)
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
 
-  game_types GameTypeProvider[]
-  games      GameList[]  // Add this relation
+model Provider {
+  id               Int      @id @default(autoincrement())
+  code             String   @unique
+  name             String
+  short_name       String?
+  order            Int      @default(0)
+  status           Int      @default(1)
+  game_list_status Boolean  @default(true)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  game_types           GameTypeProvider[]
+  games                GameList[] // Add this relation
+  seamlessTransactions SeamlessTransaction[]
 
   @@map("providers")
 }
 
 model GameTypeProvider {
-  id          Int      @id @default(autoincrement())
+  id           Int      @id @default(autoincrement())
   game_type_id Int
-  provider_id Int
-  image       String
-  rate        Decimal  @db.Decimal(10,4)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  provider_id  Int
+  image        String
+  rate         Decimal  @db.Decimal(10, 4)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 
-  game_type   GameType @relation(fields: [game_type_id], references: [id], onDelete: Cascade)
-  provider    Provider @relation(fields: [provider_id], references: [id], onDelete: Cascade)
+  game_type GameType @relation(fields: [game_type_id], references: [id], onDelete: Cascade)
+  provider  Provider @relation(fields: [provider_id], references: [id], onDelete: Cascade)
 
   @@map("game_type_providers")
 }
 
 model GameList {
-  id          Int      @id @default(autoincrement())
-  code        String
-  name        String
-  click_count BigInt   @default(0)
-  game_type_id Int
-  product_id  Int
-  image_url   String
-  status      Boolean  @default(true)
-  hot_status  Boolean  @default(false)
+  id            Int      @id @default(autoincrement())
+  code          String
+  name          String
+  click_count   BigInt   @default(0)
+  game_type_id  Int
+  product_id    Int
+  image_url     String
+  status        Boolean  @default(true)
+  hot_status    Boolean  @default(false)
   provider_code String? // <-- Add this line
   provider_name String? // <-- Add this line
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
 
-  game_type   GameType @relation(fields: [game_type_id], references: [id], onDelete: Cascade)
-  provider    Provider @relation(fields: [product_id], references: [id], onDelete: Cascade)
+  game_type GameType @relation(fields: [game_type_id], references: [id], onDelete: Cascade)
+  provider  Provider @relation(fields: [product_id], references: [id], onDelete: Cascade)
 
   @@map("game_lists")
 }
 
+model SeamlessEvent {
+  id           Int      @id @default(autoincrement())
+  user         User     @relation(fields: [user_id], references: [id])
+  user_id      Int
+  message_id   String
+  provider_id  String
+  raw_data     Json?
+  request_time DateTime
+  created_at   DateTime @default(now())
+  updated_at   DateTime @updatedAt
 
+  transactions SeamlessTransaction[]
+}
 
+model SeamlessTransaction {
+  id                 Int           @id @default(autoincrement())
+  seamless_event     SeamlessEvent @relation(fields: [seamless_event_id], references: [id])
+  seamless_event_id  Int
+  user               User          @relation(fields: [user_id], references: [id])
+  user_id            Int
+  game_type_id       Int
+  provider_id        Int
+  wager_id           BigInt?
+  valid_bet_amount   Decimal
+  bet_amount         Decimal
+  transaction_amount Decimal
+  transaction_id     String        @unique
+  rate               Decimal?
+  payout_amount      Decimal       @default(0.00)
+  status             String        @default("Pending")
+  wager_status       String        @default("Ongoing")
+  member_name        String?
+  created_at         DateTime      @default(now())
+  updated_at         DateTime      @updatedAt
+
+  provider Provider @relation(fields: [provider_id], references: [id])
+}
 
 // To migrate this schema, run the following commands:
 // 1. Generate migration files:
