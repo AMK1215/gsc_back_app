@@ -19,13 +19,25 @@ async function main() {
   // Create Owner
   const owner = await prisma.user.create({
     data: {
-      name: 'System Owner',
+      name: 'Owner',
       user_name: 'owner',
       email: 'owner@example.com',
-      phone: '1234567890',
+      phone: '09123456789',
       password: await bcrypt.hash('owner123', 10),
       role: 'Owner',
-      balance: 500000
+      balance: 50000000
+    }
+  });
+
+  const Systemowner = await prisma.user.create({
+    data: {
+      name: 'System Owner',
+      user_name: 'systemowner',
+      email: 'systemowner@example.com',
+      phone: '09123456788',
+      password: await bcrypt.hash('systemowner123', 10),
+      role: 'SystemOwner',
+      balance: 5000000
     }
   });
 
@@ -35,7 +47,7 @@ async function main() {
       name: 'Main Agent',
       user_name: 'agent',
       email: 'agent@example.com',
-      phone: '1234567891',
+      phone: '09123456787',
       password: await bcrypt.hash('agent123', 10),
       role: 'Agent',
       balance: 400000,
@@ -49,7 +61,7 @@ async function main() {
       name: 'Sub Agent',
       user_name: 'subagent',
       email: 'subagent@example.com',
-      phone: '1234567892',
+      phone: '09123456786',
       password: await bcrypt.hash('subagent123', 10),
       role: 'Sub_Agent',
       balance: 300000,
@@ -63,7 +75,7 @@ async function main() {
       name: 'Test Player',
       user_name: 'player001',
       email: 'player001@example.com',
-      phone: '1234567893',
+      phone: '09123456785',
       password: await bcrypt.hash('player123', 10),
       role: 'Player',
       balance: 100000,
@@ -76,7 +88,7 @@ async function main() {
       name: 'Test Player',
       user_name: 'player002',
       email: 'player002@example.com',
-      phone: '1234567894',
+      phone: '09123456784',
       password: await bcrypt.hash('player123', 10),
       role: 'Player',
       balance: 100000,

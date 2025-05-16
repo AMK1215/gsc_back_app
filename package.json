@@ -42,7 +42,7 @@
     "zod": "^3.24.3"
   },
   "prisma": {
-    "seed": "ts-node src/prisma/seed.ts",
+    "seed": "ts-node prisma/seed.ts",
     "gameType": "ts-node src/prisma/gameType.seed.ts",
     "provider": "ts-node src/prisma/provider.seed.ts",
     "gameTypeProvider": "ts-node src/prisma/gameTypeProvider.seed.ts",

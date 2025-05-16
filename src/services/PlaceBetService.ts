@@ -1,6 +1,8 @@
 import { getRedisLock, releaseRedisLock } from '../utils/redisLock';
 import { SeamlessTransactionWebhookValidator } from './SeamlessTransactionWebhookValidator';
 import { SlotWebhookService } from './SlotWebhookService';
+import { WalletService } from './wallet.service';
+import { prismaClient } from '../index'; // for user queries
 
 export class PlaceBetService {
   static async placeBet(requestBody: any) {
@@ -26,8 +28,25 @@ export class PlaceBetService {
 
     // 3. Business logic (DB transaction, insert bets, process transfer, etc.)
     try {
-      // ... (port your PHP logic here, using TypeORM/Prisma transactions)
-      // On success:
+      // Get the system owner (assuming only one owner)
+      const systemOwner = await prismaClient.user.findFirst({ where: { role: 'Owner' } });
+      if (!systemOwner) throw new Error('System owner not found');
+
+      const player = validator.member;
+      const walletService = new WalletService();
+
+      for (const tx of validator.transactions) {
+        // If TransactionAmount < 0, it's a bet (player pays system owner)
+        if (tx.TransactionAmount < 0) {
+          await walletService.withdraw(player.id, systemOwner.id, Math.abs(tx.TransactionAmount));
+        }
+        // If TransactionAmount > 0, it's a win (system owner pays player)
+        else if (tx.TransactionAmount > 0) {
+          await walletService.deposit(systemOwner.id, player.id, tx.TransactionAmount);
+        }
+        // If TransactionAmount == 0, do nothing (no money movement)
+      }
+
       await releaseRedisLock(`wallet:lock:${userId}`);
       for (const wagerId of wagerIds) await releaseRedisLock(`wager:lock:${wagerId}`);
       return {
