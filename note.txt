@@ -12,8 +12,10 @@ npx prisma init
 npx prisma migrate dev --name CreateUsersTable
 // colum increase 
 npx prisma migrate dev --name AddRoleToUser 
-npx prisma studio
+npx prisma migrate dev --name AddRoleToSystemOwner 
 
+npx prisma studio
+npx prisma db seed
 npx prisma migrate dev --name CreateProductsTable
 npx prisma migrate dev --name add_game_types
 npx ts-node prisma/gameType.seed.ts
